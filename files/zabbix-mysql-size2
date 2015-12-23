@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+RETVAL=$(echo "select sum($(case "$3" in both|"") echo "data_length+index_length";; data|index) echo "$3_length";; free) echo "data_free";; esac)) from information_schema.tables$([[ "$1" = "all" || ! "$1" ]] || echo " where table_schema='$1'")$([[ "$2" = "all" || ! "$2" ]] || echo "and table_name='$2'");" | HOME=/var/lib/zabbix mysql -N 2>&1)
+
+# ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+
+if [[ $RETVAL == "ERROR 2002"* ]]; then
+    logger -t $0 $RETVAL
+    echo 0
+else
+    echo $RETVAL
+fi

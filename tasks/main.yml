@@ -1,0 +1,18 @@
+---
+# This playbook contains zabbix agent -> mysql plays
+
+- name: Copy zabbix mysql size2 script
+  copy: src=zabbix-mysql-size2 dest=/usr/local/bin/zabbix-mysql-size2 mode=0755
+  sudo: yes
+
+- name: Copy zabbix mysql status2 script
+  copy: src=zabbix-mysql-status2 dest=/usr/local/bin/zabbix-mysql-status2 mode=0755
+  sudo: yes
+
+- name: Add zabbix-agent configuration file
+  copy: src=local-userparameter_mysql.conf
+        dest=/etc/zabbix/zabbix_agentd.d/local-userparameter_mysql.conf
+        mode=0644
+  notify: restart zabbix-agent
+  sudo: yes
+

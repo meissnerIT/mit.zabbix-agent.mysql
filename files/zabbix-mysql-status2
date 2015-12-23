@@ -1,0 +1,18 @@
+#!/bin/bash
+
+RETVAL="$(echo "show global status where Variable_name='$1';" | HOME=/var/lib/zabbix mysql -N 2>&1)"
+
+# ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+if [[ $RETVAL == "ERROR 2002"* ]]; then
+    # This error should be checked by another item / trigger, deliver 0 in order to stay supported
+    logger -t $0 $RETVAL
+    echo 0
+elif [[ "x$RETVAL" == "x" ]]; then
+    # Helps debugging but is an error
+    logger -t $0 "NOK - RETVAL is empty, d1=$1"
+    echo
+else
+    #logger -t $0 "OK, RETVAL=$RETVAL, d1=$1"
+    echo $RETVAL|awk '{print $2;}'
+fi
+
