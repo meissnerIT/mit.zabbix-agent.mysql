@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>2.0</version>
-    <date>2015-12-22T10:14:13Z</date>
+    <date>2016-01-18T10:51:03Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -14,7 +14,6 @@
         <template>
             <template>Template App MySQL active</template>
             <name>Template App MySQL (active)</name>
-            <description/>
             <groups>
                 <group>
                     <name>Templates</name>
@@ -634,7 +633,85 @@
                     <logtimefmt/>
                 </item>
             </items>
-            <discovery_rules/>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>MySQL database discovery</name>
+                    <type>7</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>mysql.databases2</key>
+                    <delay>3600</delay>
+                    <status>0</status>
+                    <allowed_hosts/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <filter>:</filter>
+                    <lifetime>30</lifetime>
+                    <description/>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>MySQL database {#DATABASE}</name>
+                            <type>7</type>
+                            <snmp_community/>
+                            <multiplier>0</multiplier>
+                            <snmp_oid/>
+                            <key>mysql.size2[{#DATABASE}]</key>
+                            <delay>3600</delay>
+                            <history>7</history>
+                            <trends>365</trends>
+                            <status>0</status>
+                            <value_type>3</value_type>
+                            <allowed_hosts/>
+                            <units>b</units>
+                            <delta>0</delta>
+                            <snmpv3_contextname/>
+                            <snmpv3_securityname/>
+                            <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                            <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                            <snmpv3_authpassphrase/>
+                            <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                            <snmpv3_privpassphrase/>
+                            <formula>1</formula>
+                            <delay_flex/>
+                            <params/>
+                            <ipmi_sensor/>
+                            <data_type>0</data_type>
+                            <authtype>0</authtype>
+                            <username/>
+                            <password/>
+                            <publickey/>
+                            <privatekey/>
+                            <port/>
+                            <description/>
+                            <inventory_link>0</inventory_link>
+                            <applications>
+                                <application>
+                                    <name>MySQL</name>
+                                </application>
+                            </applications>
+                            <valuemap/>
+                            <logtimefmt/>
+                        </item_prototype>
+                    </item_prototypes>
+                    <trigger_prototypes/>
+                    <graph_prototypes/>
+                    <host_prototypes/>
+                </discovery_rule>
+            </discovery_rules>
             <macros/>
             <templates/>
             <screens>
@@ -662,7 +739,6 @@
                                 <name>MySQL operations</name>
                                 <host>Template App MySQL active</host>
                             </resource>
-                            <max_columns>3</max_columns>
                             <application/>
                         </screen_item>
                         <screen_item>
@@ -684,7 +760,6 @@
                                 <name>MySQL bandwidth</name>
                                 <host>Template App MySQL active</host>
                             </resource>
-                            <max_columns>3</max_columns>
                             <application/>
                         </screen_item>
                     </screen_items>
