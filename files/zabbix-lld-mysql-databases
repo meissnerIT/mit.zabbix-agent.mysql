@@ -6,7 +6,7 @@ import json
 import subprocess
 
 if __name__ == '__main__':
-    process = subprocess.Popen("echo 'show databases'|mysql -B --skip-column-names", shell=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen("echo 'show databases'|mysql -B --skip-column-names|grep -v 'lost+found'", shell=True, stdout=subprocess.PIPE)
     output = process.communicate()[0]
     data = list()
     for line in output.split("\n"):
