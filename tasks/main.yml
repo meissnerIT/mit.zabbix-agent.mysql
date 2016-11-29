@@ -3,20 +3,37 @@
 
 - name: Copy zabbix mysql size2 script
   copy: src=zabbix-mysql-size2 dest=/usr/local/bin/zabbix-mysql-size2 mode=0755
-  sudo: yes
+  become: yes
 
 - name: Copy zabbix mysql status2 script
   copy: src=zabbix-mysql-status2 dest=/usr/local/bin/zabbix-mysql-status2 mode=0755
-  sudo: yes
+  become: yes
 
 - name: Copy zabbix mysql low level discovery (lld) script
   copy: src=zabbix-lld-mysql-databases dest=/usr/local/bin/zabbix-lld-mysql-databases mode=0755
-  sudo: yes
+  become: yes
+
+# This is the zabbix.com default
+- stat: path=/etc/zabbix/zabbix_agentd.d
+  register: zabbix_agent_d
+
+# This is the debian default
+- stat: path=/etc/zabbix/zabbix_agentd.conf.d
+  register: zabbix_agent_conf_d
 
 - name: Add zabbix-agent configuration file
   copy: src=local-userparameter_mysql.conf
         dest=/etc/zabbix/zabbix_agentd.d/local-userparameter_mysql.conf
         mode=0644
   notify: restart zabbix-agent
-  sudo: yes
+  become: yes
+  when: zabbix_agent_d.stat.exists
+
+- name: Add zabbix-agent configuration file
+  copy: src=local-userparameter_mysql.conf
+        dest=/etc/zabbix/zabbix_agentd.conf.d/local-userparameter_mysql.conf
+        mode=0644
+  notify: restart zabbix-agent
+  become: yes
+  when: zabbix_agent_conf_d.stat.exists
 
