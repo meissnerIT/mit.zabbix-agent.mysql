@@ -7,6 +7,15 @@
 #- include_role: name=mit.zabbix-agent.common task_from=get-zabbix-agent-path
 - include: ../../mit.zabbix-agent.common/tasks/get-zabbix-agent-path.yml
 
+- name: Ensure valid access rights to /var/lib/zabbix/.my.cnf
+  become: yes
+  file: path=/var/lib/zabbix/.my.cnf owner=zabbix group=zabbix mode=0640
+
+- name: Ensure we are using user zabbix_mon
+  become: yes
+  shell: grep -q zabbix_mon /var/lib/zabbix/.my.cnf
+  changed_when: no
+
 - name: Copy zabbix mysql size2 script
   copy: src=zabbix-mysql-size2 dest=/usr/local/bin/zabbix-mysql-size2 mode=0755
   become: yes
@@ -23,6 +32,6 @@
   copy: src=local-userparameter_mysql.conf
         dest={{ zabbix_agent_conf_dir }}
         mode=0644
-  notify: restart zabbix-agent
+  notify: Restart zabbix-agent
   become: yes
 
