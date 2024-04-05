@@ -7,19 +7,29 @@
 # We now include mit.zabbix-agent.common via dependency in meta/main.yml
 # This provides handlers like "Restart zabbix-agent" and vars like "zabbix_agent_conf_dir"
 
+- set_fact:
+    mysql_via_unix_socket: "{{ mysql_via_unix_socket|default(True) }}"
+
 #TODO: Find how to set "IDENTIFIED VIA unix_socket"
 # grant usage on *.* to zabbix@localhost IDENTIFIED VIA unix_socket;
-#- name: Create database user zabbix_mon
+#- name: Create database user zabbix
 #  mysql_user:
 #    login_unix_socket: /var/run/mysqld/mysqld.sock
-#    name: zabbix_mon
+#    name: zabbix
 
 # grant select on *.* to zabbix@localhost;
-- name: Create database user zabbix_mon
+- name: Create database user zabbix via unix socket
   mysql_user:
+    name: zabbix
     login_unix_socket: /var/run/mysqld/mysqld.sock
-    name: zabbix_mon
     priv: "*.*:SELECT"
+  when: mysql_via_unix_socket
+
+- name: Create database user zabbix via .my.cnf
+  mysql_user:
+    name: zabbix
+    priv: "*.*:SELECT"
+  when: not mysql_via_unix_socket
 
 - name: Create /var/lib/zabbix
   file:
@@ -31,25 +41,34 @@
 - name: Create /var/lib/zabbix/.my.cnf
   copy:
     dest: /var/lib/zabbix/.my.cnf
-    content: "[client]\nuser=zabbix_mon"
+    content: "[client]\nuser=zabbix"
     owner: zabbix
     group: zabbix
     mode: '0640'
   # Auth via socket works since Debian 11
   when: ansible_distribution == "Debian" and ansible_distribution_major_version|int > 10
 
-- name: Ensure we are using user zabbix_mon
-  shell: grep -q zabbix_mon /var/lib/zabbix/.my.cnf
+- name: Ensure we are using user zabbix
+  shell: grep -q zabbix /var/lib/zabbix/.my.cnf
   changed_when: no
 
 - name: Copy zabbix mysql size2 script
-  copy: src=zabbix-mysql-size2 dest=/usr/local/bin/zabbix-mysql-size2 mode=0755
+  copy:
+    src: zabbix-mysql-size2
+    dest: /usr/local/bin/zabbix-mysql-size2
+    mode: '0755'
 
 - name: Copy zabbix mysql status2 script
-  copy: src=zabbix-mysql-status2 dest=/usr/local/bin/zabbix-mysql-status2 mode=0755
+  copy:
+    src: zabbix-mysql-status2
+    dest: /usr/local/bin/zabbix-mysql-status2
+    mode: '0755'
 
 - name: Copy zabbix mysql low level discovery (lld) script
-  copy: src=zabbix-lld-mysql-databases dest=/usr/local/bin/zabbix-lld-mysql-databases mode=0755
+  copy:
+    src: zabbix-lld-mysql-databases
+    dest: /usr/local/bin/zabbix-lld-mysql-databases
+    mode: 0755
 
 - name: Add zabbix-agent configuration file
   copy:

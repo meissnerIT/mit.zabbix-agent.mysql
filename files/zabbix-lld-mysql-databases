@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # Based on https://github.com/grundic/zabbix-disk-performance/blob/master/lld-disks.py
 
@@ -11,7 +11,8 @@ if __name__ == '__main__':
     data = list()
     for line in output.split("\n"):
         if line:
-	    database = line
+            database = line
             data.append({"{#DATABASE}": line})
 
     print(json.dumps({"data": data}, indent=4))
+
