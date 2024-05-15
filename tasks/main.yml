@@ -25,11 +25,13 @@
     priv: "*.*:SELECT"
   when: mysql_via_unix_socket
 
-- name: Create database user zabbix via .my.cnf
-  mysql_user:
-    name: zabbix
-    priv: "*.*:SELECT"
-  when: not mysql_via_unix_socket
+# Currently we have to create the user manually as we need to create a password
+#- name: Create database user zabbix via .my.cnf
+#  mysql_user:
+#    name: zabbix
+#    host: "%"
+#    priv: "*.*:SELECT"
+#  when: not mysql_via_unix_socket
 
 - name: Create /var/lib/zabbix
   file:
