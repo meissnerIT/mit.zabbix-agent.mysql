@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #
 # Based on https://github.com/grundic/zabbix-disk-performance/blob/master/lld-disks.py
 
@@ -6,10 +6,10 @@ import json
 import subprocess
 
 if __name__ == '__main__':
-    process = subprocess.Popen("echo 'show databases'|mysql -B --skip-column-names|grep -v 'lost+found'", shell=True, stdout=subprocess.PIPE)
-    output = process.communicate()[0]
+    process = subprocess.run("echo 'show databases'|mysql -B --skip-column-names|grep -v 'lost+found'", capture_output=True, shell=True, encoding='utf8')
+    lines = process.stdout.splitlines()
     data = list()
-    for line in output.split("\n"):
+    for line in lines:
         if line:
             database = line
             data.append({"{#DATABASE}": line})
