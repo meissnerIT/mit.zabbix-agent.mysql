@@ -18,7 +18,7 @@
 #    name: zabbix
 
 # grant select on *.* to zabbix@localhost;
-- name: Create database user zabbix via unix socket
+- name: Create database user zabbix via unix socket with python3-pymysql
   mysql_user:
     name: zabbix
     login_unix_socket: /var/run/mysqld/mysqld.sock
