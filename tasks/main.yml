@@ -1,5 +1,4 @@
 ---
-
 # This playbook contains zabbix agent -> mysql plays
 #
 # https://s2.meissner.it/it/projects/mit-doc/wiki/MySQL-Überwachung_mit_Zabbix
@@ -7,8 +6,8 @@
 # We now include mit.zabbix-agent.common via dependency in meta/main.yml
 # This provides handlers like "Restart zabbix-agent" and vars like "zabbix_agent_conf_dir"
 
-- set_fact:
-    mysql_via_unix_socket: "{{ mysql_via_unix_socket|default(True) }}"
+- ansible.builtin.set_fact:
+    mysql_via_unix_socket: "{{ mysql_via_unix_socket | default(True) }}"
 
 #TODO: Find how to set "IDENTIFIED VIA unix_socket"
 # grant usage on *.* to zabbix@localhost IDENTIFIED VIA unix_socket;
@@ -34,48 +33,47 @@
 #  when: not mysql_via_unix_socket
 
 - name: Create /var/lib/zabbix
-  file:
+  ansible.builtin.file:
     path: /var/lib/zabbix/
     owner: zabbix
     group: zabbix
-    mode: '0750'
+    mode: "0750"
 
 - name: Create /var/lib/zabbix/.my.cnf
-  copy:
+  ansible.builtin.copy:
     dest: /var/lib/zabbix/.my.cnf
     content: "[client]\nuser=zabbix"
     owner: zabbix
     group: zabbix
-    mode: '0640'
+    mode: "0640"
   # Auth via socket works since Debian 11
   when: mysql_via_unix_socket and ansible_distribution == "Debian" and ansible_distribution_major_version|int > 10
 
 - name: Ensure we are using user zabbix
-  shell: grep -q zabbix /var/lib/zabbix/.my.cnf
-  changed_when: no
+  ansible.builtin.command: grep -q zabbix /var/lib/zabbix/.my.cnf
+  changed_when: false
 
 - name: Copy zabbix mysql size2 script
-  copy:
+  ansible.builtin.copy:
     src: zabbix-mysql-size2
     dest: /usr/local/bin/zabbix-mysql-size2
-    mode: '0755'
+    mode: "0755"
 
 - name: Copy zabbix mysql status2 script
-  copy:
+  ansible.builtin.copy:
     src: zabbix-mysql-status2
     dest: /usr/local/bin/zabbix-mysql-status2
-    mode: '0755'
+    mode: "0755"
 
 - name: Copy zabbix mysql low level discovery (lld) script
-  copy:
+  ansible.builtin.copy:
     src: zabbix-lld-mysql-databases
     dest: /usr/local/bin/zabbix-lld-mysql-databases
-    mode: 0755
+    mode: "0755"
 
 - name: Add zabbix-agent configuration file
-  copy:
+  ansible.builtin.copy:
     src: local-userparameter_mysql.conf
     dest: "{{ zabbix_agent_conf_dir }}"
-    mode: '0644'
+    mode: "0644"
   notify: Restart zabbix-agent
-
