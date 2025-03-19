@@ -6,7 +6,8 @@
 # We now include mit.zabbix-agent.common via dependency in meta/main.yml
 # This provides handlers like "Restart zabbix-agent" and vars like "zabbix_agent_conf_dir"
 
-- ansible.builtin.set_fact:
+- name: Set mysql_via_unix_socket
+  ansible.builtin.set_fact:
     mysql_via_unix_socket: "{{ mysql_via_unix_socket | default(True) }}"
 
 - name: Install python3-pymysql
@@ -14,9 +15,9 @@
     name: python3-pymysql
   when: mysql_via_unix_socket
 
-#TODO: Find how to set "IDENTIFIED VIA unix_socket"
+# TODO: Find how to set "IDENTIFIED VIA unix_socket"
 # grant usage on *.* to zabbix@localhost IDENTIFIED VIA unix_socket;
-#- name: Create database user zabbix
+# - name: Create database user zabbix
 #  mysql_user:
 #    login_unix_socket: /var/run/mysqld/mysqld.sock
 #    name: zabbix
@@ -30,7 +31,7 @@
   when: mysql_via_unix_socket
 
 # Currently we have to create the user manually as we need to create a password
-#- name: Create database user zabbix via .my.cnf
+# - name: Create database user zabbix via .my.cnf
 #  mysql_user:
 #    name: zabbix
 #    host: "%"
@@ -61,21 +62,13 @@
 
 - name: Copy zabbix mysql size2 script
   ansible.builtin.copy:
-    src: zabbix-mysql-size2
-    dest: /usr/local/bin/zabbix-mysql-size2
+    src: "{{ item }}"
+    dest: /opt/bin/
     mode: "0755"
-
-- name: Copy zabbix mysql status2 script
-  ansible.builtin.copy:
-    src: zabbix-mysql-status2
-    dest: /usr/local/bin/zabbix-mysql-status2
-    mode: "0755"
-
-- name: Copy zabbix mysql low level discovery (lld) script
-  ansible.builtin.copy:
-    src: zabbix-lld-mysql-databases
-    dest: /usr/local/bin/zabbix-lld-mysql-databases
-    mode: "0755"
+  loop:
+    - zabbix-lld-mysql-databases
+    - zabbix-mysql-size2
+    - zabbix-mysql-status2
 
 - name: Add zabbix-agent configuration file
   ansible.builtin.copy:
@@ -83,3 +76,16 @@
     dest: "{{ zabbix_agent_conf_dir }}"
     mode: "0644"
   notify: Restart zabbix-agent
+
+# flush handlers before removing deprecated files
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Remove deprecated binaries
+  ansible.builtin.file:
+    dest: /usr/local/bin/{{ item }}
+    state: absent
+  loop:
+    - zabbix-lld-mysql-databases
+    - zabbix-mysql-size2
+    - zabbix-mysql-status2
