@@ -2,7 +2,7 @@
 # This playbook contains zabbix agent -> mysql plays
 #
 # https://s2.meissner.it/it/projects/mit-doc/wiki/MySQL-Überwachung_mit_Zabbix
-
+#
 # We now include mit.zabbix-agent.common via dependency in meta/main.yml
 # This provides handlers like "Restart zabbix-agent" and vars like "zabbix_agent_conf_dir"
 
@@ -10,23 +10,43 @@
   ansible.builtin.set_fact:
     mysql_via_unix_socket: "{{ mysql_via_unix_socket | default(True) }}"
 
-- name: Install python3-pymysql
+- name: Set defaults for Debian
+  ansible.builtin.set_fact:
+    mysql_unix_socket: /var/run/mysqld/mysqld.sock
+    pymysql_package: python3-pymysql
+  when: ansible_os_family == "Debian"
+
+# Either 39 or 311 (py39 py311)
+- name: Get python prefix
+  ansible.builtin.shell: set -o pipefail && pkg info|egrep -o "^python[0-9]{2,3}-"|egrep -o "[0-9]+"
+  register: python_prefix
+  changed_when: false
+  when: ansible_os_family == "FreeBSD"
+
+- name: Set defaults for FreeBSD
+  ansible.builtin.set_fact:
+    mysql_unix_socket: /var/run/mysqld/mysql.sock
+    # py311-pymysql
+    pymysql_package: py{{ python_prefix }}-pymysql
+  when: ansible_system == "FreeBSD"
+
+- name: Install {{ pymysql_package }}
   ansible.builtin.package:
-    name: python3-pymysql
+    name: pymysql_package
   when: mysql_via_unix_socket
 
 # TODO: Find how to set "IDENTIFIED VIA unix_socket"
 # grant usage on *.* to zabbix@localhost IDENTIFIED VIA unix_socket;
 # - name: Create database user zabbix
 #  mysql_user:
-#    login_unix_socket: /var/run/mysqld/mysqld.sock
+#    login_unix_socket: "mysql_unix_socket"
 #    name: zabbix
 
 # grant select on *.* to zabbix@localhost;
-- name: Create database user zabbix via unix socket with python3-pymysql
+- name: Create database user zabbix via unix socket with pymysql
   mysql_user:
     name: zabbix
-    login_unix_socket: /var/run/mysqld/mysqld.sock
+    login_unix_socket: "{{ mysql_unix_socket }}"
     priv: "*.*:SELECT"
   when: mysql_via_unix_socket
 
@@ -37,6 +57,9 @@
 #    host: "%"
 #    priv: "*.*:SELECT"
 #  when: not mysql_via_unix_socket
+
+- ansible.builtin.fail:
+    msg: Define home of zabbix for Debian and FreeBSD
 
 - name: Create /var/lib/zabbix
   ansible.builtin.file:
